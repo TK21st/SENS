@@ -7,7 +7,7 @@
 **     Version     : Component 01.697, Driver 01.00, CPU db: 3.00.000
 **     Repository  : Kinetis
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2015-07-16, 13:42, # CodeGen: 44
+**     Date/Time   : 2015-07-20, 13:02, # CodeGen: 57
 **     Abstract    :
 **         This device "ADC" implements an A/D converter,
 **         its control methods and interrupt/event handling procedure.
@@ -19,19 +19,23 @@
 **          Interrupt service/event                        : Enabled
 **            A/D interrupt                                : INT_ADC0
 **            A/D interrupt priority                       : medium priority
-**          A/D channels                                   : 1
+**          A/D channels                                   : 2
 **            Channel0                                     : 
 **              A/D channel (pin)                          : LCD_P46/ADC0_SE7b/PTD6/LLWU_P15/SPI1_MOSI/UART0_RX/SPI1_MISO
 **              A/D channel (pin) signal                   : 
 **              Mode select                                : Single Ended
+**            Channel1                                     : 
+**              A/D channel (pin)                          : ADC0_DP3/ADC0_SE3/PTE22/TPM2_CH0/UART2_TX
+**              A/D channel (pin) signal                   : 
+**              Mode select                                : Single Ended
 **          A/D resolution                                 : 16 bits
-**          Conversion time                                : 5.322581 µs
+**          Conversion time                                : 7.580645 µs
 **          Low-power mode                                 : Disabled
 **          High-speed conversion mode                     : Enabled
 **          Asynchro clock output                          : Disabled
-**          Sample time                                    : 6
+**          Sample time                                    : 20 = long
 **          Internal trigger                               : Disabled
-**          Number of conversions                          : 1
+**          Number of conversions                          : 5
 **          Initialization                                 : 
 **            Enabled in init. code                        : yes
 **            Events enabled in init.                      : yes
@@ -40,9 +44,11 @@
 **            Low speed mode                               : This component disabled
 **            Slow speed mode                              : This component disabled
 **     Contents    :
-**         Measure    - byte ADC_Measure(bool WaitForResult);
-**         GetValue16 - byte ADC_GetValue16(word *Values);
-**         Calibrate  - byte ADC_Calibrate(bool WaitForResult);
+**         Measure      - byte ADC_Measure(bool WaitForResult);
+**         MeasureChan  - byte ADC_MeasureChan(bool WaitForResult, byte Channel);
+**         GetChanValue - byte ADC_GetChanValue(byte Channel, void* Value);
+**         GetValue16   - byte ADC_GetValue16(word *Values);
+**         Calibrate    - byte ADC_Calibrate(bool WaitForResult);
 **
 **     Copyright : 1997 - 2015 Freescale Semiconductor, Inc. 
 **     All Rights Reserved.
@@ -112,7 +118,7 @@ extern "C" {
 
 
 
-#define ADC_SAMPLE_GROUP_SIZE 1U
+#define ADC_SAMPLE_GROUP_SIZE 2U
 void ADC_HWEnDi(void);
 /*
 ** ===================================================================
@@ -158,6 +164,77 @@ byte ADC_Measure(bool WaitForResult);
 **                           the active speed mode
 **                           ERR_DISABLED - Device is disabled
 **                           ERR_BUSY - A conversion is already running
+*/
+/* ===================================================================*/
+
+byte ADC_MeasureChan(bool WaitForResult,byte Channel);
+/*
+** ===================================================================
+**     Method      :  ADC_MeasureChan (component ADC)
+*/
+/*!
+**     @brief
+**         This method performs measurement on one channel. (Note: If
+**         the [number of conversions] is more than one the conversion
+**         of the A/D channel is performed specified number of times.)
+**     @param
+**         WaitForResult   - Wait for a result of
+**                           conversion. If the [interrupt service] is
+**                           disabled and at the same time a [number of
+**                           conversions] is greater than 1, the
+**                           WaitForResult parameter is ignored and the
+**                           method waits for each result every time.
+**     @param
+**         Channel         - Channel number. If only one
+**                           channel in the component is set this
+**                           parameter is ignored, because the parameter
+**                           is set inside this method.
+**     @return
+**                         - Error code, possible codes:
+**                           ERR_OK - OK
+**                           ERR_SPEED - This device does not work in
+**                           the active speed mode
+**                           ERR_DISABLED - Device is disabled
+**                           ERR_BUSY - A conversion is already running
+**                           ERR_RANGE - Parameter "Channel" out of range
+*/
+/* ===================================================================*/
+
+byte ADC_GetChanValue(byte Channel, void* Value);
+/*
+** ===================================================================
+**     Method      :  ADC_GetChanValue (component ADC)
+*/
+/*!
+**     @brief
+**         Returns the last measured value of the required channel.
+**         Format and width of the value is a native format of the A/D
+**         converter.
+**     @param
+**         Channel         - Channel number. If only one
+**                           channel in the component is set then this
+**                           parameter is ignored.
+**     @param
+**         Value           - Pointer to the measured value. Data
+**                           type is a byte, a word or an int. It
+**                           depends on the supported modes, resolution,
+**                           etc. of the AD converter. See the Version
+**                           specific information for the current CPU in
+**                           [General Info].
+**     @return
+**                         - Error code, possible codes:
+**                           ERR_OK - OK
+**                           ERR_SPEED - This device does not work in
+**                           the active speed mode
+**                           ERR_NOTAVAIL - Requested value not
+**                           available
+**                           ERR_RANGE - Parameter "Channel" out of
+**                           range
+**                           ERR_OVERRUN - External trigger overrun flag
+**                           was detected after the last value(s) was
+**                           obtained (for example by GetValue). This
+**                           error may not be supported on some CPUs
+**                           (see generated code).
 */
 /* ===================================================================*/
 

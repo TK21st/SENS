@@ -27,10 +27,10 @@
             <MCGFFCLK__kHz_ v="31.25" />
           </enumgroup>
           <group name="System clocks">
-            <Core_clock_prescaler v="Auto select" />
-            <Core_clock v="24" />
-            <Bus_clock_prescaler v="6" />
-            <Bus_clock v="4" />
+            <Core_clock_prescaler v="1" />
+            <Core_clock v="48" />
+            <Bus_clock_prescaler v="2" />
+            <Bus_clock v="24" />
             <enumgroup name="PLL/FLL clock selection" v="Auto select">
               <Clock_frequency__MHz_ v="24" />
             </enumgroup>
@@ -221,7 +221,7 @@ PE_DEBUGHALT();
         <Parity v="None" />
         <Stop_bits v="1" />
         <Loop_mode v="Normal" />
-        <Baud_rate v="57600 baud" />
+        <Baud_rate v="256000 baud" />
         <Wakeup_condition v="Idle line wakeup" />
         <Stop_in_wait_mode v="no" />
         <Idle_line_mode v="Starts after start bit" />
@@ -328,13 +328,13 @@ PE_DEBUGHALT();
           <High_drive_select v="Disabled" />
           <Input_Glitch_filter v="0" />
         </group>
-        <Internal_frequency__multiplier_factor_ v="4 MHz" />
+        <Internal_frequency__multiplier_factor_ v="24 MHz" />
         <Bits_0_2_of_Frequency_divider_register v="010" />
         <Bits_3_5_of_Frequency_divider_register v="010" />
-        <SCL_frequency v="62.5 kHz" />
-        <SDA_Hold v="3.25 us" />
-        <SCL_start_Hold v="6.5 us" />
-        <SCL_stop_Hold v="8.25 us" />
+        <SCL_frequency v="375 kHz" />
+        <SDA_Hold v="0.542 us" />
+        <SCL_start_Hold v="1.083 us" />
+        <SCL_stop_Hold v="1.375 us" />
         <boolgroup name="Control acknowledge bit" v="Disabled" />
         <boolgroup name="Low timeout" v="Disabled" />
       </group>
@@ -432,11 +432,18 @@ PE_DEBUGHALT();
             <A_D_interrupt_priority v="medium priority" />
           </boolgroup>
           <boolgroup name="DMA" v="Disabled" />
-          <list name="A/D channel list" v="1">
+          <list name="A/D channel list" v="2">
             <group name="Channel 0">
               <enumgroup name="Channel mode" v="Single Ended">
                 <group name="Input">
                   <A_D_channel__pin_ v="LCD_P46/ADC0_SE7b/PTD6/LLWU_P15/SPI1_MOSI/UART0_RX/SPI1_MISO" />
+                </group>
+              </enumgroup>
+            </group>
+            <group name="Channel 1">
+              <enumgroup name="Channel mode" v="Single Ended">
+                <group name="Input">
+                  <A_D_channel__pin_ v="ADC0_DP3/ADC0_SE3/PTE22/TPM2_CH0/UART2_TX" />
                 </group>
               </enumgroup>
             </group>
@@ -446,14 +453,14 @@ PE_DEBUGHALT();
           <Low_power_mode v="Disabled" />
           <High_speed_conversion_mode v="Enabled" />
           <Asynchro_clock_output v="Disabled" />
-          <Sample_time v="10 clock periods" />
+          <Sample_time v="24 clock periods" />
           <Number_of_conversions v="1" />
-          <Conversion_time v="5.322581 &amp;#181;s" />
-          <ADC_clock v="6.2 MHz (161.29 ns)" />
-          <Single_conversion_time___Single_ended v="12.056 us" />
-          <Single_conversion_time___Differential v="13.508 us" />
-          <Additional_conversion_time___Single_ended v="5.322 us" />
-          <Additional_conversion_time___Differential v="6.774 us" />
+          <Conversion_time v="7.580645 &amp;#181;s" />
+          <ADC_clock v="5.999 MHz (166.667 ns)" />
+          <Single_conversion_time___Single_ended v="8.541 us" />
+          <Single_conversion_time___Differential v="10.041 us" />
+          <Additional_conversion_time___Single_ended v="7.833 us" />
+          <Additional_conversion_time___Differential v="9.333 us" />
           <Result_type v="unsigned 16 bits, right justified" />
           <boolgroup name="Trigger" v="Disabled" />
           <group name="Voltage reference">
@@ -511,20 +518,24 @@ PE_DEBUGHALT();
         <A_D_interrupt v="INT_ADC0" />
         <A_D_interrupt_priority v="medium priority" />
       </boolgroup>
-      <list name="A/D channels" v="1">
+      <list name="A/D channels" v="2">
         <group name="Channel0">
           <A_D_channel__pin_ v="LCD_P46/ADC0_SE7b/PTD6/LLWU_P15/SPI1_MOSI/UART0_RX/SPI1_MISO" />
           <boolgroup name="Mode select" v="Single Ended" />
         </group>
+        <group name="Channel1">
+          <A_D_channel__pin_ v="ADC0_DP3/ADC0_SE3/PTE22/TPM2_CH0/UART2_TX" />
+          <boolgroup name="Mode select" v="Single Ended" />
+        </group>
       </list>
       <A_D_resolution v="16 bits" />
-      <Conversion_time v="5.322581 &amp;#181;s" />
+      <Conversion_time v="7.580645 &amp;#181;s" />
       <Low_power_mode v="Disabled" />
       <High_speed_conversion_mode v="Enabled" />
       <Asynchro_clock_output v="Disabled" />
-      <Sample_time v="6" />
+      <Sample_time v="20 = long" />
       <boolgroup name="Internal trigger" v="Disabled" />
-      <Number_of_conversions v="1" />
+      <Number_of_conversions v="5" />
       <group name="Initialization">
         <Enabled_in_init__code v="yes" />
         <Events_enabled_in_init_ v="yes" />
@@ -543,11 +554,11 @@ PE_DEBUGHALT();
       <Start v="don&amp;apos;t generate code" />
       <Stop v="don&amp;apos;t generate code" />
       <Measure v="generate code" />
-      <MeasureChan v="don&amp;apos;t generate code" />
+      <MeasureChan v="generate code" />
       <EnableExtChanTrigger v="don&amp;apos;t generate code" />
       <EnableIntChanTrigger v="don&amp;apos;t generate code" />
       <GetValue v="don&amp;apos;t generate code" />
-      <GetChanValue v="don&amp;apos;t generate code" />
+      <GetChanValue v="generate code" />
       <GetValue8 v="don&amp;apos;t generate code" />
       <GetChanValue8 v="don&amp;apos;t generate code" />
       <GetValue16 v="generate code" />
@@ -573,6 +584,69 @@ PE_DEBUGHALT();
         <Event_procedure_name v="ADC_OnCalibrationEnd" />
         <Priority v="same as interrupt" />
       </event>
+    </Events>
+  </Bean>
+  <Bean name="RED" type="BitIO">
+    <Enabled v="Y" />
+    <Properties>
+      <Component_name v="RED" />
+      <Pin_for_I_O v="LCD_P42/PTD2/SPI0_MOSI/UART2_RX/TPM0_CH2/SPI0_MISO" />
+      <inhrbean type="BitIO_LDD">
+        <Enabled v="Y" />
+        <Template v="BitIO_LDD" />
+        <Properties>
+          <Component_name v="BitIoLdd1" />
+          <Pin_for_I_O v="LCD_P42/PTD2/SPI0_MOSI/UART2_RX/TPM0_CH2/SPI0_MISO" />
+          <Direction v="Input/Output" />
+          <group name="Initialization">
+            <Init__direction v="Output" />
+            <Init__value v="0" />
+            <Auto_initialization v="yes" />
+          </group>
+          <Safe_mode v="yes" />
+        </Properties>
+        <Methods>
+          <Init v="generate code" />
+          <Deinit v="don&amp;apos;t generate code" />
+          <GetDir v="don&amp;apos;t generate code" />
+          <SetDir v="generate code" />
+          <SetInput v="don&amp;apos;t generate code" />
+          <SetOutput v="don&amp;apos;t generate code" />
+          <GetVal v="generate code" />
+          <PutVal v="generate code" />
+          <ClrVal v="generate code" />
+          <SetVal v="generate code" />
+          <NegVal v="generate code" />
+          <ConnectPin v="don&amp;apos;t generate code" />
+          <GetRawVal v="don&amp;apos;t generate code" />
+        </Methods>
+        <Events>
+          <EmptySection_DummyValue />
+        </Events>
+      </inhrbean>
+      <Direction v="Input/Output" />
+      <group name="Initialization">
+        <Init__direction v="Output" />
+        <Init__value v="0" />
+      </group>
+      <Safe_mode v="yes" />
+      <Optimization_for v="speed" />
+    </Properties>
+    <Methods>
+      <GetDir v="don&amp;apos;t generate code" />
+      <SetDir v="generate code" />
+      <SetInput v="don&amp;apos;t generate code" />
+      <SetOutput v="don&amp;apos;t generate code" />
+      <GetVal v="generate code" />
+      <PutVal v="generate code" />
+      <ClrVal v="generate code" />
+      <SetVal v="generate code" />
+      <NegVal v="generate code" />
+      <ConnectPin v="don&amp;apos;t generate code" />
+      <GetRawVal v="don&amp;apos;t generate code" />
+    </Methods>
+    <Events>
+      <EmptySection_DummyValue />
     </Events>
   </Bean>
 </PE_PROJECT_SETTINGS_DOCUMENTATION>

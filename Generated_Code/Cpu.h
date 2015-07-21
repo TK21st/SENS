@@ -8,7 +8,7 @@
 **     Repository  : Kinetis
 **     Datasheet   : KL46P121M48SF4RM, Rev.2, Dec 2012
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2015-07-16, 13:42, # CodeGen: 44
+**     Date/Time   : 2015-07-20, 13:02, # CodeGen: 57
 **     Abstract    :
 **
 **     Settings    :
@@ -83,13 +83,13 @@ extern "C" {
 /* Events configuration constants - generated for all enabled component's events */
 #define Cpu_OnNMIINT_EVENT_ENABLED
 
-#define CPU_BUS_CLK_HZ                  4000000U /* Initial value of the bus clock frequency in Hz */
-#define CPU_CORE_CLK_HZ                 24000000U /* Initial value of the core/system clock frequency in Hz.  */
+#define CPU_BUS_CLK_HZ                  24000000U /* Initial value of the bus clock frequency in Hz */
+#define CPU_CORE_CLK_HZ                 48000000U /* Initial value of the core/system clock frequency in Hz.  */
 
 #define CPU_CLOCK_CONFIG_NUMBER         0x05U /* Specifies number of defined clock configurations. */
 
-#define CPU_BUS_CLK_HZ_CLOCK_CONFIG0    4000000U /* Value of the bus clock frequency in the clock configuration 0 in Hz. */
-#define CPU_CORE_CLK_HZ_CLOCK_CONFIG0   24000000U /* Value of the core/system clock frequency in the clock configuration 0 in Hz. */
+#define CPU_BUS_CLK_HZ_CLOCK_CONFIG0    24000000U /* Value of the bus clock frequency in the clock configuration 0 in Hz. */
+#define CPU_CORE_CLK_HZ_CLOCK_CONFIG0   48000000U /* Value of the core/system clock frequency in the clock configuration 0 in Hz. */
 
 #define CPU_BUS_CLK_HZ_CLOCK_CONFIG1    16666667U /* Value of the bus clock frequency in the clock configuration 1 in Hz. */
 #define CPU_CORE_CLK_HZ_CLOCK_CONFIG1   33333333U /* Value of the core/system clock frequency in the clock configuration 1 in Hz. */
@@ -115,8 +115,8 @@ extern "C" {
 
 /* CPU frequencies in clock configuration 0 */
 #define CPU_CLOCK_CONFIG_0              0x00U /* Clock configuration 0 identifier */
-#define CPU_CORE_CLK_HZ_CONFIG_0        24000000UL /* Core clock frequency in clock configuration 0 */
-#define CPU_BUS_CLK_HZ_CONFIG_0         4000000UL /* Bus clock frequency in clock configuration 0 */
+#define CPU_CORE_CLK_HZ_CONFIG_0        48000000UL /* Core clock frequency in clock configuration 0 */
+#define CPU_BUS_CLK_HZ_CONFIG_0         24000000UL /* Bus clock frequency in clock configuration 0 */
 #define CPU_FLEXBUS_CLK_HZ_CONFIG_0     0UL /* Flexbus clock frequency in clock configuration 0 */
 #define CPU_FLASH_CLK_HZ_CONFIG_0       0UL /* FLASH clock frequency in clock configuration 0 */
 #define CPU_USB_CLK_HZ_CONFIG_0         0UL /* USB clock frequency in clock configuration 0 */

@@ -7,7 +7,7 @@
 **     Version     : Component 01.188, Driver 01.12, CPU db: 3.00.000
 **     Repository  : Kinetis
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2015-07-16, 15:46, # CodeGen: 47
+**     Date/Time   : 2015-07-20, 12:57, # CodeGen: 56
 **     Abstract    :
 **         This component "Serial_LDD" implements an asynchronous serial
 **         communication. The component supports different settings of
@@ -30,7 +30,7 @@
 **            Parity                                       : None
 **            Stop bits                                    : 1
 **            Loop mode                                    : Normal
-**            Baud rate                                    : 57600 baud
+**            Baud rate                                    : 256000 baud
 **            Wakeup condition                             : Idle line wakeup
 **            Stop in wait mode                            : no
 **            Idle line mode                               : Starts after start bit
@@ -475,8 +475,8 @@ void UART_SetClockConfiguration(LDD_TDeviceData *DeviceDataPtr, LDD_TClockConfig
   switch (ClockConfiguration) {
     case CPU_CLOCK_CONFIG_0:
       SIM_PDD_SetClockSourceUART0(SIM_BASE_PTR, SIM_PDD_UART0_PLL_FLL_CLOCK);
-      UART0_PDD_SetBaudRate(UART0_BASE_PTR, 104U); /* Set the baud rate register. */
-      UART0_PDD_SetOversamplingRatio(UART0_BASE_PTR, 3U);
+      UART0_PDD_SetBaudRate(UART0_BASE_PTR, 19U); /* Set the baud rate register. */
+      UART0_PDD_SetOversamplingRatio(UART0_BASE_PTR, 4U);
       UART0_PDD_EnableSamplingOnBothEdges(UART0_BASE_PTR, PDD_ENABLE);
       DeviceDataPrv->EnMode = TRUE;    /* Set the flag "device enabled" in the actual speed CPU mode */
       break;

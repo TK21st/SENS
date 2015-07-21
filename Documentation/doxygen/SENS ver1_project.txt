@@ -25,6 +25,7 @@
 - \subpage UART
 - \subpage I2CFreedom
 - \subpage AdcLdd1
+- \subpage BitIoLdd1
 
 */
 

@@ -8,7 +8,7 @@
 **     Repository  : Kinetis
 **     Datasheet   : KL46P121M48SF4RM, Rev.2, Dec 2012
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2015-07-16, 13:42, # CodeGen: 44
+**     Date/Time   : 2015-07-20, 13:02, # CodeGen: 57
 **     Abstract    :
 **
 **     Settings    :
@@ -339,10 +339,10 @@
 **                ERCLK32K. clock [MHz]                    : 0.001
 **                MCGFFCLK [kHz]                           : 31.25
 **              System clocks                              : 
-**                Core clock prescaler                     : Auto select
-**                Core clock                               : 24
-**                Bus clock prescaler                      : 6
-**                Bus clock                                : 4
+**                Core clock prescaler                     : 1
+**                Core clock                               : 48
+**                Bus clock prescaler                      : 2
+**                Bus clock                                : 24
 **                PLL/FLL clock selection                  : Auto select
 **                  Clock frequency [MHz]                  : 24
 **                TPM clock selection                      : Auto select
@@ -488,6 +488,8 @@
 #include "I2CFreedom.h"
 #include "ADC.h"
 #include "AdcLdd1.h"
+#include "RED.h"
+#include "BitIoLdd1.h"
 #include "PE_Types.h"
 #include "PE_Error.h"
 #include "PE_Const.h"
@@ -1427,8 +1429,8 @@ LDD_TError Cpu_SetClockConfiguration(LDD_TClockConfiguration ModeID)
       /* SIM_CLKDIV1: OUTDIV1=1,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,OUTDIV4=3,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0 */
       SIM_CLKDIV1 = (SIM_CLKDIV1_OUTDIV1(0x01) | SIM_CLKDIV1_OUTDIV4(0x03)); /* Set the system prescalers to safe value */
       Cpu_SetMCG(0U);                  /* Update clock source setting */
-      /* SIM_CLKDIV1: OUTDIV1=1,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,OUTDIV4=5,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0 */
-      SIM_CLKDIV1 = (SIM_CLKDIV1_OUTDIV1(0x01) | SIM_CLKDIV1_OUTDIV4(0x05)); /* Update system prescalers */
+      /* SIM_CLKDIV1: OUTDIV1=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,OUTDIV4=1,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0 */
+      SIM_CLKDIV1 = (SIM_CLKDIV1_OUTDIV1(0x00) | SIM_CLKDIV1_OUTDIV4(0x01)); /* Update system prescalers */
       /* SIM_SOPT2: ??=0,PLLFLLSEL=1 */
       SIM_SOPT2 = (uint32_t)((SIM_SOPT2 & (uint32_t)~(uint32_t)(
                    0x00020000U
@@ -1588,8 +1590,8 @@ void __init_hardware(void)
     /* PMC_REGSC: ACKISO=1 */
     PMC_REGSC |= PMC_REGSC_ACKISO_MASK; /* Release IO pads after wakeup from VLLS mode. */
   }
-  /* SIM_CLKDIV1: OUTDIV1=1,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,OUTDIV4=5,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0 */
-  SIM_CLKDIV1 = (SIM_CLKDIV1_OUTDIV1(0x01) | SIM_CLKDIV1_OUTDIV4(0x05)); /* Update system prescalers */
+  /* SIM_CLKDIV1: OUTDIV1=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,OUTDIV4=1,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0 */
+  SIM_CLKDIV1 = (SIM_CLKDIV1_OUTDIV1(0x00) | SIM_CLKDIV1_OUTDIV4(0x01)); /* Update system prescalers */
   /* SIM_SOPT2: ??=0,PLLFLLSEL=1 */
   SIM_SOPT2 = (uint32_t)((SIM_SOPT2 & (uint32_t)~(uint32_t)(
                0x00020000U
@@ -1727,6 +1729,8 @@ void PE_low_level_init(void)
   (void)I2CFreedom_Init(NULL);
   /* ### ADC "ADC" init code ... */
   ADC_Init();
+  /* ### BitIO_LDD "BitIoLdd1" component auto initialization. Auto initialization feature can be disabled by component property "Auto initialization". */
+  (void)BitIoLdd1_Init(NULL);
   __EI();
 }
   /* Flash configuration field */

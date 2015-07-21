@@ -6,7 +6,7 @@
 **     Version     : Component 01.003, Driver 01.04, CPU db: 3.00.000
 **     Repository  : Kinetis
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2015-07-14, 17:12, # CodeGen: 32
+**     Date/Time   : 2015-07-20, 12:39, # CodeGen: 54
 **     Abstract    :
 **
 **     Settings    :
@@ -59,6 +59,8 @@
   #include "I2CFreedom.h"
   #include "ADC.h"
   #include "AdcLdd1.h"
+  #include "RED.h"
+  #include "BitIoLdd1.h"
   #include "Events.h"
 
 

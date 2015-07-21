@@ -37,6 +37,8 @@
 #include "I2CFreedom.h"
 #include "ADC.h"
 #include "AdcLdd1.h"
+#include "RED.h"
+#include "BitIoLdd1.h"
 
 #ifdef __cplusplus
 extern "C" {

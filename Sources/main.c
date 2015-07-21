@@ -34,6 +34,8 @@
 #include "I2CFreedom.h"
 #include "ADC.h"
 #include "AdcLdd1.h"
+#include "RED.h"
+#include "BitIoLdd1.h"
 /* Including shared modules, which are used for whole project */
 #include "PE_Types.h"
 #include "PE_Error.h"
@@ -83,12 +85,14 @@ struct AccelSensor thisAccel;					// this accelerometer
 
 uint16_t adc;
 
-uint8_t message[10];
+uint16_t adc2;
+
+uint8_t message[12];
 
 //function prototypes
 int8 MMA8451_Freedom_Init_50Hz(LDD_TDeviceData *DeviceDataPtr, struct AccelSensor *pthisAccel);
 void MMA8451_Freedom_ReadData(LDD_TDeviceData *DeviceDataPtr, struct AccelSensor *pthisAccel);
-uint8_t Creat_Message(LDD_TDeviceData *DeviceDataPtr,struct AccelSensor *pthisAccel, uint16_t ADC_reading);
+uint8_t Creat_Message(LDD_TDeviceData *DeviceDataPtr,struct AccelSensor *pthisAccel, uint16_t ADC_reading, uint16_t ADC_reading2);
 
 /*lint -save  -e970 Disable MISRA rule (6.3) checking. */
 int main(void)
@@ -113,12 +117,24 @@ int main(void)
 		   thisAccel.fGp[X] = (float) thisAccel.iGp[X] * thisAccel.fgPerCount;
 		   thisAccel.fGp[Y] = (float) thisAccel.iGp[Y] * thisAccel.fgPerCount;
 		   thisAccel.fGp[Z] = (float) thisAccel.iGp[Z] * thisAccel.fgPerCount;
-		   (void)ADC_Measure(FALSE);
+		   /*(void)ADC_Measure(FALSE);
 		   while (!ADC_FLAG){};
-		   (void)ADC_GetValue16(&adc);
+		   ADC_FLAG = FALSE;
+		   (void)ADC_GetValue16(&adc);*/
 
-		   Creat_Message(UART_DeviceData,&thisAccel, adc);
-		   UART_SendBlock(UART_DeviceData,message,10); //calling this function inside the Create_Send_UART function does not send the right package
+		   ADC_MeasureChan(FALSE,0);
+		   while(!ADC_FLAG){};
+		   ADC_FLAG = FALSE;
+		   ADC_GetChanValue(0,&adc);
+
+		   ADC_MeasureChan(FALSE,1);
+		   while(!ADC_FLAG){};
+		   ADC_FLAG = FALSE;
+		   ADC_GetChanValue(1,&adc2);
+
+		   Creat_Message(UART_DeviceData,&thisAccel, adc, adc2);
+		   UART_SendBlock(UART_DeviceData,message,12); //calling this function inside the Create_Send_UART function does not send the right package
+		   RED_NegVal();
 	   }
 
    }
@@ -133,7 +149,7 @@ int main(void)
   /*** Processor Expert end of main routine. DON'T WRITE CODE BELOW!!! ***/
 } /*** End of main routine. DO NOT MODIFY THIS TEXT!!! ***/
 
-uint8_t Creat_Message(LDD_TDeviceData *DeviceDataPtr,struct AccelSensor *pthisAccel, uint16_t ADC_reading){
+uint8_t Creat_Message(LDD_TDeviceData *DeviceDataPtr,struct AccelSensor *pthisAccel, uint16_t ADC_reading, uint16_t ADC_reading2){
 	message[0] = 0;
 	message[1] = 0x01;
 	for (int m = 0; m<3; m++){
@@ -148,6 +164,11 @@ uint8_t Creat_Message(LDD_TDeviceData *DeviceDataPtr,struct AccelSensor *pthisAc
 		ADC_reading = 0x0101;
 	}
 
+	if (ADC_reading2 == 0){
+		message[1] |= 0b00001000;
+		ADC_reading2 = 0x0101;
+	}
+
 	message[2]=(pthisAccel->iGp[X])		>>8		;
 	message[3]=(pthisAccel->iGp[X]) 	& 0x00ff;
 	message[4]=(pthisAccel->iGp[Y])		>>8		;
@@ -156,6 +177,8 @@ uint8_t Creat_Message(LDD_TDeviceData *DeviceDataPtr,struct AccelSensor *pthisAc
 	message[7]=(pthisAccel->iGp[Z]) 	& 0x00ff;
 	message[8]=ADC_reading>>8;
 	message[9]=(ADC_reading & 0x00ff);
+	message[10] =ADC_reading2>>8;
+	message[11] = (ADC_reading2 & 0x00ff);
 
 	//UART_SendBlock(DeviceDataPtr,message,10);
 
