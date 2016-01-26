@@ -33,12 +33,9 @@
 #include "PE_Error.h"
 #include "PE_Const.h"
 #include "IO_Map.h"
-#include "UART.h"
 #include "I2CFreedom.h"
-#include "ADC.h"
-#include "AdcLdd1.h"
-#include "RED.h"
-#include "BitIoLdd1.h"
+#include "RGB_Sensor.h"
+#include "USB.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -102,24 +99,6 @@ void I2CFreedom_OnMasterBlockReceived(LDD_TUserData *UserDataPtr);
 
 /*
 ** ===================================================================
-**     Event       :  UART_OnBlockReceived (module Events)
-**
-**     Component   :  UART [Serial_LDD]
-*/
-/*!
-**     @brief
-**         This event is called when the requested number of data is
-**         moved to the input buffer.
-**     @param
-**         UserDataPtr     - Pointer to the user or
-**                           RTOS specific data. This pointer is passed
-**                           as the parameter of Init method.
-*/
-/* ===================================================================*/
-void UART_OnBlockReceived(LDD_TUserData *UserDataPtr);
-
-/*
-** ===================================================================
 **     Event       :  UART_OnBlockSent (module Events)
 **
 **     Component   :  UART [Serial_LDD]
@@ -152,21 +131,81 @@ void ADC_OnEnd(void);
 ** ===================================================================
 */
 
-void ADC_OnCalibrationEnd(void);
 /*
 ** ===================================================================
-**     Event       :  ADC_OnCalibrationEnd (module Events)
+**     Event       :  RGB_Sensor_OnMasterBlockSent (module Events)
 **
-**     Component   :  ADC [ADC]
-**     Description :
-**         This event is called when the calibration has been finished.
-**         User should check if the calibration pass or fail by
-**         Calibration status method./nThis event is enabled only if
-**         the <Interrupt service/event> property is enabled.
-**     Parameters  : None
-**     Returns     : Nothing
-** ===================================================================
+**     Component   :  RGB_Sensor [I2C_LDD]
 */
+/*!
+**     @brief
+**         This event is called when I2C in master mode finishes the
+**         transmission of the data successfully. This event is not
+**         available for the SLAVE mode and if MasterSendBlock is
+**         disabled. 
+**     @param
+**         UserDataPtr     - Pointer to the user or
+**                           RTOS specific data. This pointer is passed
+**                           as the parameter of Init method.
+*/
+/* ===================================================================*/
+void RGB_Sensor_OnMasterBlockSent(LDD_TUserData *UserDataPtr);
+
+/*
+** ===================================================================
+**     Event       :  RGB_Sensor_OnMasterBlockReceived (module Events)
+**
+**     Component   :  RGB_Sensor [I2C_LDD]
+*/
+/*!
+**     @brief
+**         This event is called when I2C is in master mode and finishes
+**         the reception of the data successfully. This event is not
+**         available for the SLAVE mode and if MasterReceiveBlock is
+**         disabled.
+**     @param
+**         UserDataPtr     - Pointer to the user or
+**                           RTOS specific data. This pointer is passed
+**                           as the parameter of Init method.
+*/
+/* ===================================================================*/
+void RGB_Sensor_OnMasterBlockReceived(LDD_TUserData *UserDataPtr);
+
+/*
+** ===================================================================
+**     Event       :  USB_OnBlockReceived (module Events)
+**
+**     Component   :  USB [Serial_LDD]
+*/
+/*!
+**     @brief
+**         This event is called when the requested number of data is
+**         moved to the input buffer.
+**     @param
+**         UserDataPtr     - Pointer to the user or
+**                           RTOS specific data. This pointer is passed
+**                           as the parameter of Init method.
+*/
+/* ===================================================================*/
+void USB_OnBlockReceived(LDD_TUserData *UserDataPtr);
+
+/*
+** ===================================================================
+**     Event       :  USB_OnBlockSent (module Events)
+**
+**     Component   :  USB [Serial_LDD]
+*/
+/*!
+**     @brief
+**         This event is called after the last character from the
+**         output buffer is moved to the transmitter. 
+**     @param
+**         UserDataPtr     - Pointer to the user or
+**                           RTOS specific data. This pointer is passed
+**                           as the parameter of Init method.
+*/
+/* ===================================================================*/
+void USB_OnBlockSent(LDD_TUserData *UserDataPtr);
 
 /* END Events */
 

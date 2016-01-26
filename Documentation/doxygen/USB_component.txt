@@ -1,5 +1,5 @@
 /*!
-  \page UART UART (Serial_LDD)
+  \page USB USB (Serial_LDD)
 **         This component "Serial_LDD" implements an asynchronous serial
 **         communication. The component supports different settings of
 **         parity, word width, stop-bit and communication speed,
@@ -8,47 +8,47 @@
 **         The component requires one on-chip asynchronous serial communication channel.
 **
 
-- \subpage UART_settings
-- \subpage UART_regs_overview  
-- \subpage UART_regs_details
-- \ref UART_module "Component documentation" 
-\page UART_regs_overview Registers Initialization Overview
+- \subpage USB_settings
+- \subpage USB_regs_overview  
+- \subpage USB_regs_details
+- \ref USB_module "Component documentation" 
+\page USB_regs_overview Registers Initialization Overview
 This page contains the initialization values for the registers of the peripheral(s) configured
 by the component. 
 <table>
-<tr><td colspan="4" class="ttitle1">UART Initialization</td></tr>
+<tr><td colspan="4" class="ttitle1">USB Initialization</td></tr>
 <tr><td class="ttitle2">Address</td><td class="ttitle2">Register</td><td class="ttitle2">Register Value</td><td class="ttitle2">Register Description</td></tr>
 <tr><td>0x40048034</td><td>SIM_SCGC4</td>
-<td class="regNotResetVal">0xF0000430</td>
- <td>SIM_SCGC4 register, peripheral UART.</td></tr>
+<td class="regNotResetVal">0xF00004F0</td>
+ <td>SIM_SCGC4 register, peripheral USB.</td></tr>
 <tr><td>0x40049004</td><td>PORTA_PCR1</td>
 <td class="regNotResetVal">0x00000200</td>
- <td>PORTA_PCR1 register, peripheral UART.</td></tr>
+ <td>PORTA_PCR1 register, peripheral USB.</td></tr>
 <tr><td>0x40049008</td><td>PORTA_PCR2</td>
 <td class="regNotResetVal">0x00000200</td>
- <td>PORTA_PCR2 register, peripheral UART.</td></tr>
+ <td>PORTA_PCR2 register, peripheral USB.</td></tr>
 <tr><td>0xE000E40C</td><td>NVIC_IPR3</td>
 <td class="regNotResetVal">0x00000080</td>
- <td>NVIC_IPR3 register, peripheral UART.</td></tr>
+ <td>NVIC_IPR3 register, peripheral USB.</td></tr>
 <tr><td>0xE000E100</td><td>NVIC_ISER</td>
-<td class="regNotResetVal">0x00001000</td>
- <td>NVIC_ISER register, peripheral UART.</td></tr>
+<td class="regNotResetVal">0x00001300</td>
+ <td>NVIC_ISER register, peripheral USB.</td></tr>
 <tr><td>0x4006A002</td><td>UART0_C1</td>
 <td class="regResetVal">0x00000000</td>
- <td>UART0_C1 register, peripheral UART.</td></tr>
+ <td>UART0_C1 register, peripheral USB.</td></tr>
 <tr><td>0x4006A006</td><td>UART0_C3</td>
 <td class="regResetVal">0x00000000</td>
- <td>UART0_C3 register, peripheral UART.</td></tr>
+ <td>UART0_C3 register, peripheral USB.</td></tr>
 <tr><td>0x4006A00A</td><td>UART0_C4</td>
 <td class="regNotResetVal">0x00000000</td>
- <td>UART0_C4 register, peripheral UART.</td></tr>
+ <td>UART0_C4 register, peripheral USB.</td></tr>
 <tr><td>0x4006A005</td><td>UART0_S2</td>
 <td class="regResetVal">0x00000000</td>
- <td>UART0_S2 register, peripheral UART.</td></tr>
+ <td>UART0_S2 register, peripheral USB.</td></tr>
 </table>
 Color Denotes Reset Value
 <br/>
-\page UART_regs_details Register Initialization Details
+\page USB_regs_details Register Initialization Details
 This page contains detailed description of initialization values for the 
 registers of the peripheral(s) configured by the component. 
 
@@ -99,7 +99,7 @@ registers of the peripheral(s) configured by the component.
         
 </div>
 <table class="regtbl2"><tr><td class="trowtit" colspan="2">Address</td><td colspan="2">0x40048034</td></tr>
-<tr class="trowtit"><td  class="trowtit" colspan="2">Initial value</td><td colspan="2">0xF0000430</td></tr>
+<tr class="trowtit"><td  class="trowtit" colspan="2">Initial value</td><td colspan="2">0xF00004F0</td></tr>
 <tr class="trowtit"><td  class="trowtit" colspan="2">After-reset value</td><td colspan="2">0xF0000030</td></tr>
 <tr><td class="ttitle2">Bit</td><td class="ttitle2">Field</td><td class="ttitle2">Value</td><td class="ttitle2">Description</td></tr>
 <tr><td>23</td><td>SPI1</td><td>0x00</td><td>SPI1 Clock Gate Control</td>
@@ -109,8 +109,8 @@ registers of the peripheral(s) configured by the component.
 <tr><td>12</td><td>UART2</td><td>0x00</td><td>UART2 Clock Gate Control</td>
 <tr><td>11</td><td>UART1</td><td>0x00</td><td>UART1 Clock Gate Control</td>
 <tr><td>10</td><td>UART0</td><td>0x01</td><td>UART0 Clock Gate Control</td>
-<tr><td>7</td><td>I2C1</td><td>0x00</td><td>I2C1 Clock Gate Control</td>
-<tr><td>6</td><td>I2C0</td><td>0x00</td><td>I2C0 Clock Gate Control</td>
+<tr><td>7</td><td>I2C1</td><td>0x01</td><td>I2C1 Clock Gate Control</td>
+<tr><td>6</td><td>I2C0</td><td>0x01</td><td>I2C0 Clock Gate Control</td>
 </tr></table>
 <div class="reghdr1">PORTA_PCR1</div>
 <div class="regdiag">
@@ -308,7 +308,7 @@ registers of the peripheral(s) configured by the component.
         
 </div>
 <table class="regtbl2"><tr><td class="trowtit" colspan="2">Address</td><td colspan="2">0xE000E100</td></tr>
-<tr class="trowtit"><td  class="trowtit" colspan="2">Initial value</td><td colspan="2">0x00001000</td></tr>
+<tr class="trowtit"><td  class="trowtit" colspan="2">Initial value</td><td colspan="2">0x00001300</td></tr>
 <tr class="trowtit"><td  class="trowtit" colspan="2">After-reset value</td><td colspan="2">0x00000000</td></tr>
 <tr><td class="ttitle2">Bit</td><td class="ttitle2">Field</td><td class="ttitle2">Value</td><td class="ttitle2">Description</td></tr>
 <tr><td>0 - 31</td><td>SETENA</td><td>0x00</td><td>Interrupt set enable bits</td>
@@ -443,9 +443,9 @@ registers of the peripheral(s) configured by the component.
 </tr></table>
 */
 /*!
-\page UART_settings Component Settings
+\page USB_settings Component Settings
 \code
-**          Component name                                 : UART
+**          Component name                                 : USB
 **          Device                                         : UART0
 **          Interrupt service/event                        : Enabled
 **            Interrupt RxD                                : INT_UART0
@@ -459,7 +459,7 @@ registers of the peripheral(s) configured by the component.
 **            Parity                                       : None
 **            Stop bits                                    : 1
 **            Loop mode                                    : Normal
-**            Baud rate                                    : 256000 baud
+**            Baud rate                                    : 9600 baud
 **            Wakeup condition                             : Idle line wakeup
 **            Stop in wait mode                            : no
 **            Idle line mode                               : Starts after start bit

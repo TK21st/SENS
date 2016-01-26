@@ -30,69 +30,32 @@
 /* Including needed modules to compile this module/procedure */
 #include "Cpu.h"
 #include "Events.h"
-#include "UART.h"
 #include "I2CFreedom.h"
-#include "ADC.h"
-#include "AdcLdd1.h"
-#include "RED.h"
-#include "BitIoLdd1.h"
+#include "RGB_Sensor.h"
+#include "USB.h"
+#include "RGB_Sensor.h"
 /* Including shared modules, which are used for whole project */
 #include "PE_Types.h"
 #include "PE_Error.h"
 #include "PE_Const.h"
 #include "IO_Map.h"
+
 /* User includes (#include below this line is not maintained by Processor Expert) */
-// I2C communications globals
-#define I2C_BUF_LEN           16
-uint8_t I2C_Buf[I2C_BUF_LEN];
+#include "build.h"
+#include "MMA.h"
+#include "TCS_RGB.h"
 
-// Freedom FRDM-KL46Z board sensor I2C addresses
-#define MMA8451_FRDM_I2C_ADDR		0x1D
+//function prototype
 
-// MMA8451 registers and constants
-#define MMA8451_STATUS					0x00
-#define MMA8451_OUT_X_MSB       	  	0x01
-#define MMA8451_WHO_AM_I      			0x0D
-#define MMA8451_XYZ_DATA_CFG     	  	0x0E
-#define MMA8451_CTRL_REG1        	 	0x2A
-#define MMA8451_CTRL_REG2         		0x2B
-#define MMA8451_WHO_AM_I_VALUE     		0x1A
-
-/*flags*/
-
-volatile bool I2C_SENT_FLAG = FALSE; //I2C SENT FLAG
-volatile bool I2C_RCVD_FLAG = FALSE; //I2C RECEIVED FLAG
-volatile bool ADC_FLAG = TRUE;
-volatile bool UART_FLAG = TRUE; //UART FLAG
-
-/* easier for XYZ Data Storage */
-#define true 1
-#define false 0
-#define X 0
-#define Y 1
-#define Z 2
-
-struct AccelSensor
-{
-	int16 iGp[3];			// 25Hz integer readings (counts)
-	float fGp[3];			// 25Hz readings (g)
-	float fgPerCount;		// initialized to FGPERCOUNT
-};
-
+void RGB_Run(void);
+void Message_Gen(void);
 
 // sensor data structures and state vectors
 struct AccelSensor thisAccel;					// this accelerometer
+struct RGBSensor thisRGB;
 
-uint16_t adc;
-
-uint16_t adc2;
-
-uint8_t message[12];
-
-//function prototypes
-int8 MMA8451_Freedom_Init_50Hz(LDD_TDeviceData *DeviceDataPtr, struct AccelSensor *pthisAccel);
-void MMA8451_Freedom_ReadData(LDD_TDeviceData *DeviceDataPtr, struct AccelSensor *pthisAccel);
-uint8_t Creat_Message(LDD_TDeviceData *DeviceDataPtr,struct AccelSensor *pthisAccel, uint16_t ADC_reading, uint16_t ADC_reading2);
+#define message_length  (12) // 6 values * 2 bytes/value
+uint8_t message[message_length + 2]; //total length is values + flag
 
 /*lint -save  -e970 Disable MISRA rule (6.3) checking. */
 int main(void)
@@ -104,39 +67,32 @@ int main(void)
   /*** End of Processor Expert internal initialization.                    ***/
   /* Write your code here */
   /* For example: for(;;) { } */
+  RGB_Init();
+  RGB_Enable();
+  uint8_t ID_CHECK = RGB_Read8(RGB_Sensor_DeviceData,TCS34725_ID);
+  if (ID_CHECK != 0x44){
+   return FALSE;
+  }
+
   MMA8451_Freedom_Init_50Hz(I2CFreedom_DeviceData, &thisAccel);
 
    /* F_READ: Fast read mode, data format limited to single byte (auto increment counter will skip LSB)
     * ACTIVE: Full scale selection
     */
+  USB_UART_FLAG = TRUE;
    for(;;){
-	   if(UART_FLAG){
-		   UART_FLAG = FALSE;
+	   if(USB_UART_FLAG){
 		   MMA8451_Freedom_ReadData(I2CFreedom_DeviceData, &thisAccel);
 		   // scale the HAL-aligned accelerometer measurements
 		   thisAccel.fGp[X] = (float) thisAccel.iGp[X] * thisAccel.fgPerCount;
 		   thisAccel.fGp[Y] = (float) thisAccel.iGp[Y] * thisAccel.fgPerCount;
 		   thisAccel.fGp[Z] = (float) thisAccel.iGp[Z] * thisAccel.fgPerCount;
-		   /*(void)ADC_Measure(FALSE);
-		   while (!ADC_FLAG){};
-		   ADC_FLAG = FALSE;
-		   (void)ADC_GetValue16(&adc);*/
 
-		   ADC_MeasureChan(FALSE,0);
-		   while(!ADC_FLAG){};
-		   ADC_FLAG = FALSE;
-		   ADC_GetChanValue(0,&adc);
-
-		   ADC_MeasureChan(FALSE,1);
-		   while(!ADC_FLAG){};
-		   ADC_FLAG = FALSE;
-		   ADC_GetChanValue(1,&adc2);
-
-		   Creat_Message(UART_DeviceData,&thisAccel, adc, adc2);
-		   UART_SendBlock(UART_DeviceData,message,12); //calling this function inside the Create_Send_UART function does not send the right package
-		   RED_NegVal();
+		   RGB_Run();
+		   Message_Gen();
+		   USB_UART_FLAG = FALSE;
+		   USB_SendBlock(USB_DeviceData, (byte *)message, 14);
 	   }
-
    }
   /*** Don't write any code pass this line, or it will be deleted during code generation. ***/
   /*** RTOS startup code. Macro PEX_RTOS_START is defined by the RTOS component. DON'T MODIFY THIS CODE!!! ***/
@@ -149,161 +105,42 @@ int main(void)
   /*** Processor Expert end of main routine. DON'T WRITE CODE BELOW!!! ***/
 } /*** End of main routine. DO NOT MODIFY THIS TEXT!!! ***/
 
-uint8_t Creat_Message(LDD_TDeviceData *DeviceDataPtr,struct AccelSensor *pthisAccel, uint16_t ADC_reading, uint16_t ADC_reading2){
-	message[0] = 0;
-	message[1] = 0x01;
-	for (int m = 0; m<3; m++){
-		if(pthisAccel->iGp[m] == 0){
-			pthisAccel->iGp[m] = 0x0101; //0b 0000 0001 0000 0001 so that when shift by 8 bits, both become 0x01
-			message[1] |= 0b10000000 >> m;
-		}
-	}
 
-	if (ADC_reading == 0){
-		message[1] |= 0b00010000;
-		ADC_reading = 0x0101;
-	}
+void Message_Gen(void){
 
-	if (ADC_reading2 == 0){
-		message[1] |= 0b00001000;
-		ADC_reading2 = 0x0101;
-	}
-
-	message[2]=(pthisAccel->iGp[X])		>>8		;
-	message[3]=(pthisAccel->iGp[X]) 	& 0x00ff;
-	message[4]=(pthisAccel->iGp[Y])		>>8		;
-	message[5]=(pthisAccel->iGp[Y])		& 0x00ff;
-	message[6]=(pthisAccel->iGp[Z])		>>8		;
-	message[7]=(pthisAccel->iGp[Z]) 	& 0x00ff;
-	message[8]=ADC_reading>>8;
-	message[9]=(ADC_reading & 0x00ff);
-	message[10] =ADC_reading2>>8;
-	message[11] = (ADC_reading2 & 0x00ff);
-
-	//UART_SendBlock(DeviceDataPtr,message,10);
-
-	return *message;
+	message[0] = 'A';
+	message[1] = 'B';
+	message[2] = thisRGB.RED[0];
+	message[3] = thisRGB.RED[1];
+	message[4] = thisRGB.GREEN[0];
+	message[5] = thisRGB.GREEN[1];
+	message[6] = thisRGB.BLUE[0];
+	message[7] = thisRGB.BLUE[1];
+	message[8] = (thisAccel.iGp[X] & 0xFF );
+	message[9] = (thisAccel.iGp[X] >> 8);
+	message[10] = (thisAccel.iGp[Y] & 0xFF );
+	message[11] = (thisAccel.iGp[Y] >> 8);
+	message[12] = (thisAccel.iGp[Z] & 0xFF );
+	message[13] = (thisAccel.iGp[Z] >> 8);
 }
 
 
-// initialize MMA8451 accelerometer sensor on Freedom board for 50Hz
-int8 MMA8451_Freedom_Init_50Hz(LDD_TDeviceData *DeviceDataPtr, struct AccelSensor *pthisAccel)
-{
-	LDD_I2C_TBusState BusState;		// I2C bus state
-	LDD_I2C_TErrorMask MMA8451_I2C_Error;
+void RGB_Run(void){
+	RGB_Init();
+	RGB_Enable();
+	thisRGB.CLEAR[0] = RGB_Read8(RGB_Sensor_DeviceData, CLEAR_L);
+	thisRGB.CLEAR[1] = RGB_Read8(RGB_Sensor_DeviceData, CLEAR_H);
+	thisRGB.RED[0] = RGB_Read8(RGB_Sensor_DeviceData, RED_L);
+	thisRGB.RED[1] = RGB_Read8(RGB_Sensor_DeviceData, RED_H);
+	thisRGB.BLUE[0] = RGB_Read8(RGB_Sensor_DeviceData, BLUE_L);
+	thisRGB.BLUE[1] = RGB_Read8(RGB_Sensor_DeviceData, BLUE_H);
+	thisRGB.GREEN[0] = RGB_Read8(RGB_Sensor_DeviceData, GREEN_L);
+	thisRGB.GREEN[1] = RGB_Read8(RGB_Sensor_DeviceData, GREEN_H);
 
-	// set up the MMA8451 I2C address
-	I2CFreedom_SelectSlaveDevice(DeviceDataPtr, LDD_I2C_ADDRTYPE_7BITS, MMA8451_FRDM_I2C_ADDR);
-
-	// write 0000 0000 = 0x00 to CTRL_REG1 to place MMA8451 into standby
-	// [7-1] = 0000 000
-	// [0]: active=0
-	I2C_Buf[0] = MMA8451_CTRL_REG1;
-	I2C_Buf[1] = 0x00;
-	I2C_SENT_FLAG = FALSE; //clear I2C_SENT_FLAG
-
-	// transmit the bytes
-	I2CFreedom_MasterSendBlock(DeviceDataPtr, I2C_Buf, 2, LDD_I2C_SEND_STOP);
-
-	// loop while no error detected and the I2C sent callback has not yet set the sent flag
-	do
-	{
-		// read the error flag
-		// ERR_OK = 0x00: device is present
-		// ERR_DISABLED = 0x07: device is disabled
-		// ERR_SPEED = 0x01: device does not work in the active speed mode
-		I2CFreedom_GetError(DeviceDataPtr, &MMA8451_I2C_Error);
-	}
-	while ((!MMA8451_I2C_Error) && !I2C_SENT_FLAG);
-
-	// return immediately with error condition if MPL3115 is not present
-	if (MMA8451_I2C_Error)
-		return false;
-
-	// wait until the I2C bus is idle
-	do
-	{
-		I2CFreedom_CheckBus(DeviceDataPtr, &BusState);
-	} while (BusState != LDD_I2C_IDLE);
-
-	// write 0000 0001 = 0x01 to XYZ_DATA_CFG register to set g range
-	// [7-5]: reserved=000
-	// [4]: HPF_OUT=0
-	// [3-2]: reserved=00
-	// [1-0]: FS=01 for +/-4g: 512 counts / g = 8192 counts / g after 4 bit left shift
-	I2C_Buf[0] = MMA8451_XYZ_DATA_CFG;
-	I2C_Buf[1] = 0x01;
-	I2C_SENT_FLAG = FALSE;
-	I2CFreedom_MasterSendBlock(DeviceDataPtr, I2C_Buf, 2, LDD_I2C_SEND_STOP);
-	// wait until the I2C sent callback function sets the sent flag
-	while (!I2C_SENT_FLAG);
-	// wait until the I2C bus is idle
-	do
-	{
-		I2CFreedom_CheckBus(DeviceDataPtr, &BusState);
-	} while (BusState != LDD_I2C_IDLE);
-
-	// write 0010 0001 = 0x21 to CTRL_REG1
-	// [7-6]: aslp_rate=00
-	// [5-3]: dr=100 for 50Hz data rate
-	// [2]: unused=0
-	// [1]: f_read=0 for normal 16 bit reads
-	// [0]: active=1 to take the part out of standby and enable sampling
-	I2C_Buf[0] = MMA8451_CTRL_REG1;
-	I2C_Buf[1] = 0x21;
-	I2C_SENT_FLAG = FALSE;
-	I2CFreedom_MasterSendBlock(DeviceDataPtr, I2C_Buf, 2, LDD_I2C_SEND_STOP);
-	// wait until the I2C sent callback function sets the sent flag
-	while (!I2C_SENT_FLAG);
-	// wait until the I2C bus is idle
-	do
-	{
-		I2CFreedom_CheckBus(DeviceDataPtr, &BusState);
-	} while (BusState != LDD_I2C_IDLE);
-
-	return true;
-}
-
-
-// read MMA8451 accelerometer data on Freedom board data over I2C
-void MMA8451_Freedom_ReadData(LDD_TDeviceData *DeviceDataPtr, struct AccelSensor *pthisAccel)
-{
-	LDD_I2C_TBusState BusState;		// I2C bus state
-
-	// set up the MMA8451 I2C address
-	I2CFreedom_SelectSlaveDevice(DeviceDataPtr, LDD_I2C_ADDRTYPE_7BITS, MMA8451_FRDM_I2C_ADDR);
-	// set up the address of the first output register
-	I2C_Buf[0] = MMA8451_OUT_X_MSB;
-	I2C_SENT_FLAG = FALSE;
-	I2CFreedom_MasterSendBlock(DeviceDataPtr, I2C_Buf, 1, LDD_I2C_NO_SEND_STOP);
-	// wait until the I2C sent callback function sets the sent flag
-	while (!I2C_SENT_FLAG);
-
-	// read the 6 bytes of sequential sensor data
-	I2C_RCVD_FLAG = FALSE;
-	I2CFreedom_MasterReceiveBlock(DeviceDataPtr, I2C_Buf, 6, LDD_I2C_SEND_STOP);
-	// wait until the I2C received callback function sets the received flag
-	while (!I2C_RCVD_FLAG);
-	// wait until the I2C bus is idle
-	do
-	{
-		I2CFreedom_CheckBus(DeviceDataPtr, &BusState);
-	} while (BusState != LDD_I2C_IDLE);
-
-	// place the 12 bytes read into the 16 bit accelerometer structure
-	pthisAccel->iGp[X] = (I2C_Buf[0] << 8) | I2C_Buf[1];
-	pthisAccel->iGp[Y] = (I2C_Buf[2] << 8) | I2C_Buf[3];
-	pthisAccel->iGp[Z] = (I2C_Buf[4] << 8) | I2C_Buf[5];
-
-	// check for -32768 in the accelerometer since
-	// this value cannot be negated in a later HAL operation
-	if (pthisAccel->iGp[X] == -32768) pthisAccel->iGp[X]++;
-	if (pthisAccel->iGp[Y] == -32768) pthisAccel->iGp[Y]++;
-	if (pthisAccel->iGp[Z] == -32768) pthisAccel->iGp[Z]++;
-
-	// store the gain terms in the accelerometer sensor structure
-#define MMA8451_GPERCOUNT 0.0001220703125F			// equal to 1/8192
-	pthisAccel->fgPerCount = MMA8451_GPERCOUNT;
-
-	return;
+	for(int j = 0; j<500; j++); //delay for integration time (dependent on integration time)
+	thisRGB.clear = thisRGB.CLEAR[1]*256+thisRGB.CLEAR[0];
+	thisRGB.red = thisRGB.RED[1]*256+thisRGB.RED[0];
+	thisRGB.green = thisRGB.GREEN[1]*256+thisRGB.GREEN[0];
+	thisRGB.blue = thisRGB.BLUE[1]*256+thisRGB.BLUE[0];
+	//RGB_Disable();
 }

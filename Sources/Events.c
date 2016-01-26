@@ -33,10 +33,12 @@
 extern "C" {
 #endif 
 
-extern volatile bool I2C_RCVD_FLAG;
-extern volatile bool I2C_SENT_FLAG;
-extern volatile bool UART_FLAG;
-extern volatile bool ADC_FLAG;
+extern volatile bool RGB_I2C_SENT_FLAG; /* set to TRUE by the interrupt if we have received data */
+extern volatile bool RGB_I2C_RCVD_FLAG; /* set to TRUE by the interrupt if we have set data */
+extern volatile bool MMA_I2C_SENT_FLAG; /* set to TRUE by the interrupt if we have received data */
+extern volatile bool MMA_I2C_RCVD_FLAG; /* set to TRUE by the interrupt if we have set data */
+extern volatile bool USB_UART_FLAG;
+
 /* User includes (#include below this line is not maintained by Processor Expert) */
 
 /*
@@ -78,7 +80,7 @@ void Cpu_OnNMIINT(void)
 void I2CFreedom_OnMasterBlockSent(LDD_TUserData *UserDataPtr)
 {
 	//set the I2CFreedom data sent flg
-	I2C_SENT_FLAG = TRUE;
+	MMA_I2C_SENT_FLAG = TRUE;
 
 	return;
 }
@@ -104,30 +106,9 @@ void I2CFreedom_OnMasterBlockSent(LDD_TUserData *UserDataPtr)
 void I2CFreedom_OnMasterBlockReceived(LDD_TUserData *UserDataPtr)
 {
   //set the I2CFreedom data received flag
-	I2C_RCVD_FLAG = TRUE;
+	MMA_I2C_RCVD_FLAG = TRUE;
 
 	return;
-}
-
-/*
-** ===================================================================
-**     Event       :  UART_OnBlockReceived (module Events)
-**
-**     Component   :  UART [Serial_LDD]
-*/
-/*!
-**     @brief
-**         This event is called when the requested number of data is
-**         moved to the input buffer.
-**     @param
-**         UserDataPtr     - Pointer to the user or
-**                           RTOS specific data. This pointer is passed
-**                           as the parameter of Init method.
-*/
-/* ===================================================================*/
-void UART_OnBlockReceived(LDD_TUserData *UserDataPtr)
-{
-  /* Write your code here ... */
 }
 
 /*
@@ -149,8 +130,6 @@ void UART_OnBlockReceived(LDD_TUserData *UserDataPtr)
 void UART_OnBlockSent(LDD_TUserData *UserDataPtr)
 {
   /* Write your code here ... */
-	UART_FLAG = TRUE;
-	return;
 }
 
 /*
@@ -170,27 +149,102 @@ void UART_OnBlockSent(LDD_TUserData *UserDataPtr)
 void ADC_OnEnd(void)
 {
   /* Write your code here ... */
-	ADC_FLAG = TRUE;
+}
+
+/*
+** ===================================================================
+**     Event       :  RGB_Sensor_OnMasterBlockSent (module Events)
+**
+**     Component   :  RGB_Sensor [I2C_LDD]
+*/
+/*!
+**     @brief
+**         This event is called when I2C in master mode finishes the
+**         transmission of the data successfully. This event is not
+**         available for the SLAVE mode and if MasterSendBlock is
+**         disabled. 
+**     @param
+**         UserDataPtr     - Pointer to the user or
+**                           RTOS specific data. This pointer is passed
+**                           as the parameter of Init method.
+*/
+/* ===================================================================*/
+void RGB_Sensor_OnMasterBlockSent(LDD_TUserData *UserDataPtr)
+{
+  /* Write your code here ... */
+	RGB_I2C_SENT_FLAG = TRUE;
+
 	return;
 }
 
 /*
 ** ===================================================================
-**     Event       :  ADC_OnCalibrationEnd (module Events)
+**     Event       :  RGB_Sensor_OnMasterBlockReceived (module Events)
 **
-**     Component   :  ADC [ADC]
-**     Description :
-**         This event is called when the calibration has been finished.
-**         User should check if the calibration pass or fail by
-**         Calibration status method./nThis event is enabled only if
-**         the <Interrupt service/event> property is enabled.
-**     Parameters  : None
-**     Returns     : Nothing
-** ===================================================================
+**     Component   :  RGB_Sensor [I2C_LDD]
 */
-void ADC_OnCalibrationEnd(void)
+/*!
+**     @brief
+**         This event is called when I2C is in master mode and finishes
+**         the reception of the data successfully. This event is not
+**         available for the SLAVE mode and if MasterReceiveBlock is
+**         disabled.
+**     @param
+**         UserDataPtr     - Pointer to the user or
+**                           RTOS specific data. This pointer is passed
+**                           as the parameter of Init method.
+*/
+/* ===================================================================*/
+void RGB_Sensor_OnMasterBlockReceived(LDD_TUserData *UserDataPtr)
 {
   /* Write your code here ... */
+	RGB_I2C_RCVD_FLAG = TRUE;
+
+	return;
+}
+
+/*
+** ===================================================================
+**     Event       :  USB_OnBlockReceived (module Events)
+**
+**     Component   :  USB [Serial_LDD]
+*/
+/*!
+**     @brief
+**         This event is called when the requested number of data is
+**         moved to the input buffer.
+**     @param
+**         UserDataPtr     - Pointer to the user or
+**                           RTOS specific data. This pointer is passed
+**                           as the parameter of Init method.
+*/
+/* ===================================================================*/
+void USB_OnBlockReceived(LDD_TUserData *UserDataPtr)
+{
+  /* Write your code here ... */
+}
+
+/*
+** ===================================================================
+**     Event       :  USB_OnBlockSent (module Events)
+**
+**     Component   :  USB [Serial_LDD]
+*/
+/*!
+**     @brief
+**         This event is called after the last character from the
+**         output buffer is moved to the transmitter. 
+**     @param
+**         UserDataPtr     - Pointer to the user or
+**                           RTOS specific data. This pointer is passed
+**                           as the parameter of Init method.
+*/
+/* ===================================================================*/
+void USB_OnBlockSent(LDD_TUserData *UserDataPtr)
+{
+  /* Write your code here ... */
+	USB_UART_FLAG = TRUE;
+	return;
 }
 
 /* END Events */
